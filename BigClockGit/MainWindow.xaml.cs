@@ -84,9 +84,9 @@ namespace BigClockGit {
             for (int i = 0; i < numScreens; i++) {
                 Screen screen = Screen.AllScreens[i];
                 if (this.Left >= screen.WorkingArea.Left &&
-                    this.Left <= (screen.WorkingArea.Right - this.Width) &&
+                    this.Left <= screen.WorkingArea.Right &&
                     this.Top >= screen.WorkingArea.Top &&
-                    this.Top <= (screen.WorkingArea.Bottom)) {
+                    this.Top <= screen.WorkingArea.Bottom) {
 
                     string savedGeometry = this.Left.ToString() + ";" + this.Top.ToString();
 

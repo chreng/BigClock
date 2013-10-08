@@ -17,7 +17,6 @@ namespace BigClockGit {
             InitializeComponent();
 
             this.Loaded += MainWindow_Loaded;
-            this.Closed += MainWindow_Closed;
             this.LocationChanged += MainWindow_LocationChanged;
 
         }
@@ -27,10 +26,6 @@ namespace BigClockGit {
 
             ShowTime();
             UpdateTimerStart();
-        }
-
-        private void MainWindow_Closed(object sender, System.EventArgs e) {
-            SaveWindowGeometry();
         }
 
         private void MainWindow_LocationChanged(object sender, EventArgs e) {

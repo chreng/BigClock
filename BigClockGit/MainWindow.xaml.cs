@@ -3,7 +3,9 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Forms;
+using System.IO;
 using System.Globalization;
+using IWshRuntimeLibrary;
 
 namespace BigClockGit {
 
@@ -12,17 +14,24 @@ namespace BigClockGit {
         private DispatcherTimer updateTimer;
         private Screen currentScreen;
         private int currentNumScreens;
+        private NotifyIcon notifyIcon;
+        private TrayWindow trayWindow;
+        private WshShellClass wshShell;
 
         public MainWindow() {
             InitializeComponent();
 
             this.Loaded += MainWindow_Loaded;
-            this.LocationChanged += MainWindow_LocationChanged;
 
         }
 
         private void MainWindow_Loaded(object sender, System.EventArgs e) {
             InitWindowGeometry();
+
+            // Note: Start tracking location after initializing geometry
+            this.LocationChanged += MainWindow_LocationChanged;
+
+            ShowInTray();
 
             ShowTime();
             UpdateTimerStart();
@@ -33,6 +42,82 @@ namespace BigClockGit {
             if (currentNumScreens == Screen.AllScreens.Length) {
                 SaveWindowGeometry();
             }
+        }
+
+        private void ShowInTray() {
+            notifyIcon = new NotifyIcon();
+            string exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            notifyIcon.Icon = new System.Drawing.Icon(Path.Combine(exeDir, "Assets", "favicon.ico"));
+            notifyIcon.Visible = true;
+            notifyIcon.MouseClick += ShowTrayMenu;
+        }
+
+        private void ShowTrayMenu(object sender, EventArgs args) {
+            if (trayWindow == null) {
+                bool shortCutExists = System.IO.File.Exists(GetShortcutPath());
+                trayWindow = new TrayWindow(shortCutExists);
+                trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 300;
+                trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
+                trayWindow.ShowDialog();
+
+                if (trayWindow.IsExit) {
+                    if (notifyIcon != null) {
+                        notifyIcon.Visible = false;
+                        notifyIcon.MouseClick -= ShowTrayMenu;
+                    }
+                    System.Windows.Application.Current.Shutdown();
+                } else if (trayWindow.IsReset) {
+                    ResetWindowGeometry();
+                } else if (trayWindow.IsSetAutoStart) {
+                    AddShortcutToStartupGroup();
+                } else if (trayWindow.IsRemoveAutoStart) {
+                    RemoveShortcutFromStartupGroup();
+                }
+
+                trayWindow = null;
+            }
+        }
+
+        private void AddShortcutToStartupGroup() {
+            wshShell = new WshShellClass();
+            IWshRuntimeLibrary.IWshShortcut MyShortcut;
+            string tempLinkFile = Path.GetTempFileName() + ".lnk";
+            MyShortcut = (IWshRuntimeLibrary.IWshShortcut)wshShell.CreateShortcut(tempLinkFile);
+            MyShortcut.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            MyShortcut.Description = "Launches BigClockGit";
+            string exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            MyShortcut.IconLocation = Path.Combine(exeDir, "Assets", "favicon.ico");
+            MyShortcut.Save();
+
+            System.IO.File.Copy(tempLinkFile, GetShortcutPath(), true);
+            System.IO.File.Delete(tempLinkFile);
+        }
+
+        private void RemoveShortcutFromStartupGroup() {
+
+            if (System.IO.File.Exists(GetShortcutPath())) {
+                System.IO.File.Delete(GetShortcutPath());
+            }
+        }
+
+        private string GetShortcutPath() {
+            string targetLinkPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.Startup),
+                "BigClockGit.lnk");
+
+            return targetLinkPath;
+        }
+
+        private void ResetWindowGeometry() {
+            this.LocationChanged -= MainWindow_LocationChanged;
+
+            currentNumScreens = Screen.AllScreens.Length;
+            Properties.Settings.Default["ScreenGeometry" + currentNumScreens.ToString()] = "";
+            Properties.Settings.Default.Save();
+
+            InitWindowGeometry();
+
+            this.LocationChanged += MainWindow_LocationChanged;
         }
 
         private void InitWindowGeometry() {
@@ -48,11 +133,11 @@ namespace BigClockGit {
             if (string.IsNullOrEmpty(savedGeometry) == false) {
                 string[] leftTopArray = savedGeometry.Split(';');
                 if (leftTopArray.Length == 2) {
-                    int left;
-                    int top;
+                    double left;
+                    double top;
 
-                    if (int.TryParse(leftTopArray[0], out left) &&
-                        int.TryParse(leftTopArray[1], out top)) {
+                    if (double.TryParse(leftTopArray[0], out left) &&
+                        double.TryParse(leftTopArray[1], out top)) {
                         this.Left = left;
                         this.Top = top;
 
@@ -68,8 +153,8 @@ namespace BigClockGit {
                 currentScreen = Screen.PrimaryScreen;
             }
 
-            this.Left = currentScreen.WorkingArea.Right - this.Width;
-            this.Top = currentScreen.WorkingArea.Bottom - this.Height;
+            this.Left = currentScreen.WorkingArea.Width - this.Width - 150;
+            this.Top = currentScreen.WorkingArea.Height - this.Height - 100;
         }
 
         private void SaveWindowGeometry() {

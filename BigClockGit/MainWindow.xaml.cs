@@ -26,6 +26,9 @@ namespace BigClockGit {
         }
 
         private void MainWindow_Loaded(object sender, System.EventArgs e) {
+
+            SetupDefaultIfFirstLaunch();
+
             InitWindowGeometry();
 
             // Note: Start tracking location after initializing geometry
@@ -41,6 +44,20 @@ namespace BigClockGit {
             // Location changes when number of screens changes, only save geometry when user moved the window
             if (currentNumScreens == Screen.AllScreens.Length) {
                 SaveWindowGeometry();
+            }
+        }
+
+        private void SetupDefaultIfFirstLaunch() {
+            string firstLaunch = null;
+            try {
+                firstLaunch = (string)Properties.Settings.Default["FirstLaunchDone"];
+            } catch (Exception) {
+            }
+
+            if (string.IsNullOrEmpty(firstLaunch) == true) {
+                AddShortcutToStartupGroup();
+                Properties.Settings.Default["FirstLaunchDone"] = true.ToString();
+                Properties.Settings.Default.Save();
             }
         }
 

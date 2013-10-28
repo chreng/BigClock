@@ -17,4 +17,4 @@ Instructions
 
 If you want to exit, reset clock placement or remove the autostart at login do this:
 
-* Locate the startflag-icon in the tray and click the icon
+* Locate the startflag-icon in the tray and click the icon then click the button associated with the desired action

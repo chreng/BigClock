@@ -22,10 +22,11 @@ namespace BigClockGit {
         public bool IsReset { get; set; }
         public bool IsSetAutoStart { get; set; }
         public bool IsRemoveAutoStart { get; set; }
+        public double TextFontSize { get; set; }
 
         private DispatcherTimer closeWindowTimer;
 
-        public TrayWindow(bool autoStartActive) {
+        public TrayWindow(bool autoStartActive, double textFontSize) {
             InitializeComponent();
 
             IsExit = false;
@@ -41,7 +42,17 @@ namespace BigClockGit {
                 RemoveAutoStart.Visibility = System.Windows.Visibility.Hidden;
             }
 
+            this.TextFontSize = Math.Round(textFontSize, 0);
+            SliderTextFontSize.Value = this.TextFontSize;
+            LabelTextFontSize.Text = this.TextFontSize.ToString();
+            SliderTextFontSize.ValueChanged += SliderTextFontSize_ValueChanged;
+
             StartCloseWindowTimer();
+        }
+
+        private void SliderTextFontSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            TextFontSize = Math.Round(SliderTextFontSize.Value, 0);
+            LabelTextFontSize.Text = TextFontSize.ToString();
         }
 
         private void CloseWindow() {

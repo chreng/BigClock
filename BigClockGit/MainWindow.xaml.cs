@@ -72,7 +72,7 @@ namespace BigClockGit {
         private void ShowTrayMenu(object sender, EventArgs args) {
             if (trayWindow == null) {
                 bool shortCutExists = System.IO.File.Exists(GetShortcutPath());
-                trayWindow = new TrayWindow(shortCutExists);
+                trayWindow = new TrayWindow(shortCutExists, CurrentTime.FontSize);
                 trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 300;
                 trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
                 trayWindow.ShowDialog();
@@ -90,6 +90,8 @@ namespace BigClockGit {
                 } else if (trayWindow.IsRemoveAutoStart) {
                     RemoveShortcutFromStartupGroup();
                 }
+
+                CurrentTime.FontSize = trayWindow.TextFontSize;
 
                 trayWindow = null;
             }
@@ -149,14 +151,29 @@ namespace BigClockGit {
 
             if (string.IsNullOrEmpty(savedGeometry) == false) {
                 string[] leftTopArray = savedGeometry.Split(';');
-                if (leftTopArray.Length == 2) {
+                if (leftTopArray.Length >= 2) {
                     double left;
                     double top;
+                    int screen = currentNumScreens - 1;
+                    double textFontSize = CurrentTime.FontSize;
+                    if (leftTopArray.Length > 2) {
+                        int.TryParse(leftTopArray[2], out screen);
+                    }
+                    if (leftTopArray.Length > 3) {
+                        double.TryParse(leftTopArray[3], out textFontSize);
+                    }
 
                     if (double.TryParse(leftTopArray[0], out left) &&
                         double.TryParse(leftTopArray[1], out top)) {
+
+                        currentScreen = Screen.AllScreens[screen];
                         this.Left = left;
                         this.Top = top;
+
+                        if (textFontSize >= 10 &&
+                            textFontSize <= 400) {
+                            CurrentTime.FontSize = textFontSize;
+                        }
 
                         return;
                     }
@@ -185,7 +202,8 @@ namespace BigClockGit {
                     this.Top >= screen.WorkingArea.Top &&
                     this.Top <= screen.WorkingArea.Bottom) {
 
-                    string savedGeometry = this.Left.ToString() + ";" + this.Top.ToString();
+                    string savedGeometry = this.Left.ToString() + ";" + this.Top.ToString() + ";" + i.ToString() +
+                        ";" + CurrentTime.FontSize.ToString();
 
                     Properties.Settings.Default["ScreenGeometry" + numScreens.ToString()] = savedGeometry;
                     Properties.Settings.Default.Save();

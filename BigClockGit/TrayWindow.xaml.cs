@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace BigClockGit {
     /// <summary>
@@ -21,6 +22,8 @@ namespace BigClockGit {
         public bool IsReset { get; set; }
         public bool IsSetAutoStart { get; set; }
         public bool IsRemoveAutoStart { get; set; }
+
+        private DispatcherTimer closeWindowTimer;
 
         public TrayWindow(bool autoStartActive) {
             InitializeComponent();
@@ -37,26 +40,47 @@ namespace BigClockGit {
                 SetAutoStart.Visibility = System.Windows.Visibility.Visible;
                 RemoveAutoStart.Visibility = System.Windows.Visibility.Hidden;
             }
+
+            StartCloseWindowTimer();
+        }
+
+        private void CloseWindow() {
+            if (closeWindowTimer != null) {
+                closeWindowTimer.Stop();
+            }
+
+            this.Close();
+        }
+
+        private void StartCloseWindowTimer() {
+            closeWindowTimer = new System.Windows.Threading.DispatcherTimer();
+            closeWindowTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            closeWindowTimer.Interval = new TimeSpan(0, 0, 10);
+            closeWindowTimer.Start();
+        }
+
+        private void dispatcherTimer_Tick(object sender, EventArgs e) {
+            CloseWindow();
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e) {
             IsReset = true;
-            this.Close();
+            CloseWindow();
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e) {
             IsExit = true;
-            this.Close();
+            CloseWindow();
         }
 
         private void SetAutoStart_Click(object sender, RoutedEventArgs e) {
             IsSetAutoStart = true;
-            this.Close();
+            CloseWindow();
         }
 
         private void RemoveAutoStart_Click(object sender, RoutedEventArgs e) {
             IsRemoveAutoStart = true;
-            this.Close();
+            CloseWindow();
         }
     }
 }

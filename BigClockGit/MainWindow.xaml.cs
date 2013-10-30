@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Forms;
 using System.IO;
-using System.Globalization;
+using System.Windows.Media;
 using IWshRuntimeLibrary;
 
 namespace BigClockGit {
@@ -14,6 +14,7 @@ namespace BigClockGit {
         private DispatcherTimer updateTimer;
         private Screen currentScreen;
         private int currentNumScreens;
+        private string textFontColor;
         private NotifyIcon notifyIcon;
         private TrayWindow trayWindow;
         private WshShellClass wshShell;
@@ -72,7 +73,7 @@ namespace BigClockGit {
         private void ShowTrayMenu(object sender, EventArgs args) {
             if (trayWindow == null) {
                 bool shortCutExists = System.IO.File.Exists(GetShortcutPath());
-                trayWindow = new TrayWindow(shortCutExists, CurrentTime.FontSize);
+                trayWindow = new TrayWindow(shortCutExists, CurrentTime.FontSize, textFontColor);
                 trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 300;
                 trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
                 trayWindow.ShowDialog();
@@ -92,6 +93,13 @@ namespace BigClockGit {
                 }
 
                 CurrentTime.FontSize = trayWindow.TextFontSize;
+
+                try {
+                    CurrentTime.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(trayWindow.TextFontColor));
+                    textFontColor = trayWindow.TextFontColor;
+                } catch {
+                }
+
 
                 trayWindow = null;
             }
@@ -155,12 +163,18 @@ namespace BigClockGit {
                     double left;
                     double top;
                     int screen = currentNumScreens - 1;
-                    double textFontSize = CurrentTime.FontSize;
                     if (leftTopArray.Length > 2) {
                         int.TryParse(leftTopArray[2], out screen);
                     }
+
+                    double textFontSize = CurrentTime.FontSize;
                     if (leftTopArray.Length > 3) {
                         double.TryParse(leftTopArray[3], out textFontSize);
+                    }
+
+                    textFontColor = "Black";
+                    if (leftTopArray.Length > 4) {
+                        textFontColor = leftTopArray[4];
                     }
 
                     if (double.TryParse(leftTopArray[0], out left) &&
@@ -173,6 +187,11 @@ namespace BigClockGit {
                         if (textFontSize >= 10 &&
                             textFontSize <= 400) {
                             CurrentTime.FontSize = textFontSize;
+                        }
+
+                        try {
+                            CurrentTime.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(textFontColor));
+                        } catch {
                         }
 
                         return;
@@ -203,7 +222,7 @@ namespace BigClockGit {
                     this.Top <= screen.WorkingArea.Bottom) {
 
                     string savedGeometry = this.Left.ToString() + ";" + this.Top.ToString() + ";" + i.ToString() +
-                        ";" + CurrentTime.FontSize.ToString();
+                        ";" + CurrentTime.FontSize.ToString() + ";" + textFontColor;
 
                     Properties.Settings.Default["ScreenGeometry" + numScreens.ToString()] = savedGeometry;
                     Properties.Settings.Default.Save();

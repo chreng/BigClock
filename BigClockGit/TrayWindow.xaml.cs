@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace BigClockGit {
@@ -23,10 +16,11 @@ namespace BigClockGit {
         public bool IsSetAutoStart { get; set; }
         public bool IsRemoveAutoStart { get; set; }
         public double TextFontSize { get; set; }
+        public string TextFontColor { set; get; }
 
         private DispatcherTimer closeWindowTimer;
 
-        public TrayWindow(bool autoStartActive, double textFontSize) {
+        public TrayWindow(bool autoStartActive, double textFontSize, string textColorName) {
             InitializeComponent();
 
             IsExit = false;
@@ -42,32 +36,64 @@ namespace BigClockGit {
                 RemoveAutoStart.Visibility = System.Windows.Visibility.Hidden;
             }
 
+            SetupColors(textColorName);
+            SetupFontSize(textFontSize);
+
+            StartCloseWindowTimer();
+        }
+
+        private void SetupColors(string textColorName) {
+
+            foreach (PropertyInfo p in typeof(Colors).GetProperties()) {
+                if (p.PropertyType == typeof(Color)) {
+                    ComboBoxItem colorItem = new ComboBoxItem();
+                    colorItem.Content = p.Name;
+                    if (string.Compare(textColorName, p.Name, true) == 0) {
+                        colorItem.IsSelected = true;
+                    }
+                    TextColor.Items.Add(colorItem);
+                }
+            }
+
+            TextColor.SelectionChanged += TextColor_SelectionChanged;
+        }
+
+        private void TextColor_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            TextFontColor = (e.AddedItems[0] as ComboBoxItem).Content as string;
+            StartCloseWindowTimer();
+        }
+
+        private void SetupFontSize(double textFontSize) {
             this.TextFontSize = Math.Round(textFontSize, 0);
             SliderTextFontSize.Value = this.TextFontSize;
             LabelTextFontSize.Text = this.TextFontSize.ToString();
             SliderTextFontSize.ValueChanged += SliderTextFontSize_ValueChanged;
-
-            StartCloseWindowTimer();
         }
 
         private void SliderTextFontSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             TextFontSize = Math.Round(SliderTextFontSize.Value, 0);
             LabelTextFontSize.Text = TextFontSize.ToString();
+            StartCloseWindowTimer();
         }
 
         private void CloseWindow() {
-            if (closeWindowTimer != null) {
-                closeWindowTimer.Stop();
-            }
-
+            StopCloseWindowTimer();
             this.Close();
         }
 
         private void StartCloseWindowTimer() {
+            StopCloseWindowTimer();
             closeWindowTimer = new System.Windows.Threading.DispatcherTimer();
             closeWindowTimer.Tick += new EventHandler(dispatcherTimer_Tick);
-            closeWindowTimer.Interval = new TimeSpan(0, 0, 10);
+            closeWindowTimer.Interval = new TimeSpan(0, 0, 30);
             closeWindowTimer.Start();
+        }
+
+        private void StopCloseWindowTimer() {
+            if (closeWindowTimer != null) {
+                closeWindowTimer.Stop();
+                closeWindowTimer = null;
+            }
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e) {
@@ -91,6 +117,10 @@ namespace BigClockGit {
 
         private void RemoveAutoStart_Click(object sender, RoutedEventArgs e) {
             IsRemoveAutoStart = true;
+            CloseWindow();
+        }
+
+        private void Done_Click(object sender, RoutedEventArgs e) {
             CloseWindow();
         }
     }

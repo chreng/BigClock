@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
          WindowStyle="ToolWindow"
         Icon="Assets/favicon.ico"
-        Title="BigClockGit" Height="210" Width="160" ShowInTaskbar="False" Topmost="True">
+        Title="BigClockGit" Height="250" Width="160" ShowInTaskbar="False" Topmost="True">
     <Grid>
         <Button Name="Reset" Content="Reset" HorizontalAlignment="Left" Margin="22,20,0,0" VerticalAlignment="Top" Width="100" Click="Reset_Click"/>
         <Button Name="SetAutoStart" Content="Start at login" HorizontalAlignment="Left" Margin="22,60,0,0" VerticalAlignment="Top" Width="100" Click="SetAutoStart_Click"/>
@@ -11,7 +11,9 @@
         <TextBlock HorizontalAlignment="Left" Margin="22,83,0,0" TextWrapping="Wrap" Text="Font size" VerticalAlignment="Top"/>
         <TextBlock Name="LabelTextFontSize" HorizontalAlignment="Left" Margin="90,83,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top"/>
         <Slider Name="SliderTextFontSize" HorizontalAlignment="Left" Margin="22,106,0,0" VerticalAlignment="Top" Width="100" Maximum="200" Minimum="10" SmallChange="1"/>
-        <Button Name="Exit" Content="Exit" HorizontalAlignment="Left" Margin="22,140,0,0" VerticalAlignment="Top" Width="100" Click="Exit_Click"/>
+        <ComboBox Name="TextColor" HorizontalAlignment="Left" Margin="22,140,0,0" VerticalAlignment="Top" Width="100"/>
+        <Button Name="Done" Content="Done" HorizontalAlignment="Left" Margin="22,180,0,0" VerticalAlignment="Top" Width="45" Click="Done_Click"/>
+        <Button Name="Exit" Content="Exit" HorizontalAlignment="Left" Margin="77,180,0,0" VerticalAlignment="Top" Width="45" Click="Exit_Click"/>
 
     </Grid>
 </Window>

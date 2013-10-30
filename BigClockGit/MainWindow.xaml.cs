@@ -100,8 +100,9 @@ namespace BigClockGit {
                 } catch {
                 }
 
-
                 trayWindow = null;
+
+                SaveWindowGeometry();
             }
         }
 

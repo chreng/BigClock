@@ -9,7 +9,7 @@ using IWshRuntimeLibrary;
 
 namespace BigClockGit {
 
-    public partial class MainWindow : Window {
+    public partial class MainWindow : Window, IDisposable {
 
         private DispatcherTimer updateTimer;
         private Screen currentScreen;
@@ -39,6 +39,22 @@ namespace BigClockGit {
 
             ShowTime();
             UpdateTimerStart();
+        }
+
+        public void Dispose() {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool cleanManagedAndNative) {
+            if (notifyIcon != null) {
+                notifyIcon.MouseClick -= ShowTrayMenu;
+                notifyIcon.Visible = false;
+                notifyIcon.Dispose();
+                notifyIcon = null;
+            }
+        }
+
+        private void RemoveNotifyIcon() {
         }
 
         private void MainWindow_LocationChanged(object sender, EventArgs e) {
@@ -79,10 +95,10 @@ namespace BigClockGit {
                 trayWindow.ShowDialog();
 
                 if (trayWindow.IsExit) {
-                    if (notifyIcon != null) {
-                        notifyIcon.Visible = false;
-                        notifyIcon.MouseClick -= ShowTrayMenu;
-                    }
+                    notifyIcon.MouseClick -= ShowTrayMenu;
+                    notifyIcon.Visible = false;
+                    notifyIcon.Dispose();
+                    notifyIcon = null;
                     System.Windows.Application.Current.Shutdown();
                 } else if (trayWindow.IsReset) {
                     ResetWindowGeometry();

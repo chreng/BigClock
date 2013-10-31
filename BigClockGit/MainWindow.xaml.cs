@@ -15,6 +15,7 @@ namespace BigClockGit {
         private Screen currentScreen;
         private int currentNumScreens;
         private string textFontColor;
+        private bool textVisible;
         private NotifyIcon notifyIcon;
         private TrayWindow trayWindow;
         private WshShellClass wshShell;
@@ -89,8 +90,9 @@ namespace BigClockGit {
         private void ShowTrayMenu(object sender, EventArgs args) {
             if (trayWindow == null) {
                 bool shortCutExists = System.IO.File.Exists(GetShortcutPath());
-                trayWindow = new TrayWindow(shortCutExists, CurrentTime.FontSize, textFontColor);
-                trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 300;
+                bool textVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible;
+                trayWindow = new TrayWindow(shortCutExists, CurrentTime.FontSize, textFontColor, textVisible);
+                trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 350;
                 trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
                 trayWindow.ShowDialog();
 
@@ -114,6 +116,12 @@ namespace BigClockGit {
                     CurrentTime.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(trayWindow.TextFontColor));
                     textFontColor = trayWindow.TextFontColor;
                 } catch {
+                }
+
+                if (trayWindow.TextVisible) {
+                    CurrentTime.Visibility = System.Windows.Visibility.Visible;
+                } else {
+                    CurrentTime.Visibility = System.Windows.Visibility.Hidden;
                 }
 
                 trayWindow = null;
@@ -194,6 +202,11 @@ namespace BigClockGit {
                         textFontColor = leftTopArray[4];
                     }
 
+                    textVisible = true;
+                    if (leftTopArray.Length > 5) {
+                        bool.TryParse(leftTopArray[5], out textVisible);
+                    }
+
                     if (double.TryParse(leftTopArray[0], out left) &&
                         double.TryParse(leftTopArray[1], out top)) {
 
@@ -209,6 +222,12 @@ namespace BigClockGit {
                         try {
                             CurrentTime.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(textFontColor));
                         } catch {
+                        }
+
+                        if (textVisible) {
+                            CurrentTime.Visibility = System.Windows.Visibility.Visible;
+                        } else {
+                            CurrentTime.Visibility = System.Windows.Visibility.Hidden;
                         }
 
                         return;
@@ -238,8 +257,10 @@ namespace BigClockGit {
                     this.Top >= screen.WorkingArea.Top &&
                     this.Top <= screen.WorkingArea.Bottom) {
 
+                    bool textVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible ? true : false;
                     string savedGeometry = this.Left.ToString() + ";" + this.Top.ToString() + ";" + i.ToString() +
-                        ";" + CurrentTime.FontSize.ToString() + ";" + textFontColor;
+                        ";" + CurrentTime.FontSize.ToString() + ";" + textFontColor +
+                        ";" + textVisible.ToString();
 
                     Properties.Settings.Default["ScreenGeometry" + numScreens.ToString()] = savedGeometry;
                     Properties.Settings.Default.Save();

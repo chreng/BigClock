@@ -17,10 +17,11 @@ namespace BigClockGit {
         public bool IsRemoveAutoStart { get; set; }
         public double TextFontSize { get; set; }
         public string TextFontColor { set; get; }
+        public bool TextVisible { set; get; }
 
         private DispatcherTimer closeWindowTimer;
 
-        public TrayWindow(bool autoStartActive, double textFontSize, string textColorName) {
+        public TrayWindow(bool autoStartActive, double textFontSize, string textColorName, bool textVisible) {
             InitializeComponent();
 
             IsExit = false;
@@ -38,6 +39,7 @@ namespace BigClockGit {
 
             SetupColors(textColorName);
             SetupFontSize(textFontSize);
+            SetupVisibility(textVisible);
 
             StartCloseWindowTimer();
         }
@@ -73,6 +75,18 @@ namespace BigClockGit {
         private void SliderTextFontSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             TextFontSize = Math.Round(SliderTextFontSize.Value, 0);
             LabelTextFontSize.Text = TextFontSize.ToString();
+            StartCloseWindowTimer();
+        }
+
+        private void SetupVisibility(bool textVisible) {
+            TextVisibility.IsChecked = textVisible;
+            this.TextVisible = textVisible;
+            TextVisibility.Checked += TextVisibility_Checked;
+            TextVisibility.Unchecked += TextVisibility_Checked;
+        }
+
+       private void TextVisibility_Checked(object sender, RoutedEventArgs e) {
+            TextVisible = TextVisibility.IsChecked == true;
             StartCloseWindowTimer();
         }
 

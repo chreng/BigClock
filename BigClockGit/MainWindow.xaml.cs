@@ -119,6 +119,7 @@ namespace BigClockGit {
                 trayWindow.AutoStartChanged += trayWindow_AutoStartChanged;
             }
 
+            this.Activate();
             trayWindow.Show();
             SetupTrayMenu();
         }

@@ -1,20 +1,38 @@
 ﻿<Window x:Class="BigClockGit.TrayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-         WindowStyle="ToolWindow"
+        WindowStyle="ToolWindow"
+        ResizeMode="NoResize" SizeToContent="WidthAndHeight"
         Icon="Assets/favicon.ico"
-        Title="BigClockGit" Height="280" Width="160" ShowInTaskbar="False" Topmost="True">
-    <Grid>
-        <Button Name="Reset" Content="Reset" HorizontalAlignment="Left" Margin="22,20,0,0" VerticalAlignment="Top" Width="100" Click="Reset_Click"/>
-        <Button Name="SetAutoStart" Content="Start at login" HorizontalAlignment="Left" Margin="22,60,0,0" VerticalAlignment="Top" Width="100" Click="SetAutoStart_Click"/>
-        <Button Name="RemoveAutoStart" Content="No start at login" HorizontalAlignment="Left" Margin="22,60,0,0" VerticalAlignment="Top" Width="100" Click="RemoveAutoStart_Click"/>
-        <TextBlock HorizontalAlignment="Left" Margin="22,83,0,0" TextWrapping="Wrap" Text="Font size" VerticalAlignment="Top"/>
-        <TextBlock Name="LabelTextFontSize" HorizontalAlignment="Left" Margin="90,83,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top"/>
-        <Slider Name="SliderTextFontSize" HorizontalAlignment="Left" Margin="22,106,0,0" VerticalAlignment="Top" Width="100" Maximum="200" Minimum="10" SmallChange="1"/>
-        <ComboBox Name="TextColor" HorizontalAlignment="Left" Margin="22,140,0,0" VerticalAlignment="Top" Width="100"/>
-        <CheckBox Name="TextVisibility" Content="Time visible" ToolTip="Time visibility for this setup" HorizontalAlignment="Left" Margin="22,180,0,0" VerticalAlignment="Top"/>
-        <Button Name="Done" Content="Done" HorizontalAlignment="Left" Margin="22,220,0,0" VerticalAlignment="Top" Width="45" Click="Done_Click"/>
-        <Button Name="Exit" Content="Exit" HorizontalAlignment="Left" Margin="77,220,0,0" VerticalAlignment="Top" Width="45" Click="Exit_Click"/>
+        Title="BigClockGit" Height="302.642" Width="180" ShowInTaskbar="False" Topmost="True">
+    <Grid Margin="22,22,22,22">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+        
+        <Button Name="Reset" Content="Reset" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Click="Reset_Click"/>
+
+        <CheckBox Name="AutoStartActive" Content="Start at login" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top"/>        
+        
+        <TextBlock HorizontalAlignment="Left" Grid.Row="2" TextWrapping="Wrap" Text="Font size" VerticalAlignment="Top"/>
+        <TextBlock Name="LabelTextFontSize" HorizontalAlignment="Left" Grid.Row="2" Margin="60,0,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top"/>
+        
+        <Slider Name="SliderTextFontSize" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Top" Width="120" Maximum="200" Minimum="10" SmallChange="1"/>
+
+        <TextBlock HorizontalAlignment="Left" Grid.Row="4" Text="Color" VerticalAlignment="Top"/>
+        <ComboBox Name="TextColor" HorizontalAlignment="Left" Grid.Row="4" Margin="40,0,0,0" VerticalAlignment="Top" Width="80"/>
+        
+        <CheckBox Name="TextVisibility" Content="Time visible" ToolTip="Time visibility for this setup" HorizontalAlignment="Left"
+                  Grid.Row="5" VerticalAlignment="Top"/>
+        
+        <Button Name="Done" Content="Done" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Top" Width="50" Click="Done_Click"/>
+        <Button Name="Exit" Content="Exit" HorizontalAlignment="Left" Grid.Row="6" Margin="70,0,0,0" VerticalAlignment="Top" Width="50" Click="Exit_Click"/>
 
     </Grid>
 </Window>

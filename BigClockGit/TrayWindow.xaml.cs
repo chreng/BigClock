@@ -11,13 +11,17 @@ namespace BigClockGit {
     /// </summary>
     public partial class TrayWindow : Window {
 
+        public delegate void TextSizeChangedHandler(Object sender, double textSize);
+        public event TextSizeChangedHandler TextSizeChanged;
+        public delegate void TextColorChangedHandler(Object sender, string colorName);
+        public event TextColorChangedHandler TextColorChanged;
+        public delegate void TextVisibilityChangedHandler(Object sender, bool isVisible);
+        public event TextVisibilityChangedHandler TextVisibilityChanged;
+        public delegate void AutoStartChangedHandler(Object sender, bool autoStartActive);
+        public event AutoStartChangedHandler AutoStartChanged;
+
         public bool IsExit { get; set;  }
         public bool IsReset { get; set; }
-        public bool IsSetAutoStart { get; set; }
-        public bool IsRemoveAutoStart { get; set; }
-        public double TextFontSize { get; set; }
-        public string TextFontColor { set; get; }
-        public bool TextVisible { set; get; }
 
         private DispatcherTimer closeWindowTimer;
 
@@ -26,17 +30,8 @@ namespace BigClockGit {
 
             IsExit = false;
             IsReset = false;
-            IsSetAutoStart = false;
-            IsRemoveAutoStart = false;
 
-            if (autoStartActive) {
-                SetAutoStart.Visibility = System.Windows.Visibility.Hidden;
-                RemoveAutoStart.Visibility = System.Windows.Visibility.Visible;
-            } else {
-                SetAutoStart.Visibility = System.Windows.Visibility.Visible;
-                RemoveAutoStart.Visibility = System.Windows.Visibility.Hidden;
-            }
-
+            SetupAutostart(autoStartActive);
             SetupColors(textColorName);
             SetupFontSize(textFontSize);
             SetupVisibility(textVisible);
@@ -61,34 +56,46 @@ namespace BigClockGit {
         }
 
         private void TextColor_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            TextFontColor = (e.AddedItems[0] as ComboBoxItem).Content as string;
+            TextColorChanged(this, (e.AddedItems[0] as ComboBoxItem).Content as string);
             StartCloseWindowTimer();
         }
 
         private void SetupFontSize(double textFontSize) {
-            this.TextFontSize = Math.Round(textFontSize, 0);
-            SliderTextFontSize.Value = this.TextFontSize;
-            LabelTextFontSize.Text = this.TextFontSize.ToString();
+            SliderTextFontSize.Value = Math.Round(textFontSize, 0);
+            LabelTextFontSize.Text = SliderTextFontSize.Value.ToString();
             SliderTextFontSize.ValueChanged += SliderTextFontSize_ValueChanged;
         }
 
         private void SliderTextFontSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            TextFontSize = Math.Round(SliderTextFontSize.Value, 0);
-            LabelTextFontSize.Text = TextFontSize.ToString();
+            double textFontSize = Math.Round(SliderTextFontSize.Value, 0);
+            LabelTextFontSize.Text = textFontSize.ToString();
+            TextSizeChanged(this, textFontSize);
             StartCloseWindowTimer();
         }
 
         private void SetupVisibility(bool textVisible) {
             TextVisibility.IsChecked = textVisible;
-            this.TextVisible = textVisible;
             TextVisibility.Checked += TextVisibility_Checked;
             TextVisibility.Unchecked += TextVisibility_Checked;
         }
 
        private void TextVisibility_Checked(object sender, RoutedEventArgs e) {
-            TextVisible = TextVisibility.IsChecked == true;
+            bool textVisible = TextVisibility.IsChecked == true;
+            TextVisibilityChanged(this, textVisible);
             StartCloseWindowTimer();
         }
+
+       private void SetupAutostart(bool autostartActive) {
+           AutoStartActive.IsChecked = autostartActive;
+           AutoStartActive.Checked += Autostart_Checked;
+           AutoStartActive.Unchecked += Autostart_Checked;
+       }
+
+       private void Autostart_Checked(object sender, RoutedEventArgs e) {
+           bool autostartActive = TextVisibility.IsChecked == true;
+           AutoStartChanged(this, autostartActive);
+           StartCloseWindowTimer();
+       }
 
         private void CloseWindow() {
             StopCloseWindowTimer();
@@ -121,16 +128,6 @@ namespace BigClockGit {
 
         private void Exit_Click(object sender, RoutedEventArgs e) {
             IsExit = true;
-            CloseWindow();
-        }
-
-        private void SetAutoStart_Click(object sender, RoutedEventArgs e) {
-            IsSetAutoStart = true;
-            CloseWindow();
-        }
-
-        private void RemoveAutoStart_Click(object sender, RoutedEventArgs e) {
-            IsRemoveAutoStart = true;
             CloseWindow();
         }
 

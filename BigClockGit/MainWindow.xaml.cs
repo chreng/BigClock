@@ -85,37 +85,46 @@ namespace BigClockGit {
             notifyIcon.Icon = new System.Drawing.Icon(Path.Combine(exeDir, "Assets", "favicon.ico"));
             notifyIcon.Visible = true;
             notifyIcon.MouseClick += ShowTrayMenu;
+
+            trayWindow = new TrayWindow();
+            trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 350;
+            trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
+
+            trayWindow.DoneOrExit += trayWindow_DoneOrExit;
+            trayWindow.TextReset += trayWindow_TextReset;
+            trayWindow.TextSizeChanged += trayWindow_TextSizeChanged;
+            trayWindow.TextColorChanged += trayWindow_TextColorChanged;
+            trayWindow.TextVisibilityChanged += trayWindow_TextVisibilityChanged;
+            trayWindow.AutoStartChanged += trayWindow_AutoStartChanged;
+        }
+
+        private void trayWindow_DoneOrExit(object sender, bool isExit) {
+            if (isExit) {
+                notifyIcon.MouseClick -= ShowTrayMenu;
+                notifyIcon.Visible = false;
+                notifyIcon.Dispose();
+                notifyIcon = null;
+                System.Windows.Application.Current.Shutdown();
+            } else {
+                trayWindow.Hide();
+            }
         }
 
         private void ShowTrayMenu(object sender, EventArgs args) {
+            trayWindow.Show();
+            SetupTrayMenu();
+        }
 
-            if (trayWindow == null) {
-                bool autoStartActive = System.IO.File.Exists(GetShortcutPath());
-                bool textVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible;
-                trayWindow = new TrayWindow(autoStartActive, CurrentTime.FontSize, textFontColor, textVisible);
-                trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 350;
-                trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
-                trayWindow.TextSizeChanged += trayWindow_TextSizeChanged;
-                trayWindow.TextColorChanged += trayWindow_TextColorChanged;
-                trayWindow.TextVisibilityChanged += trayWindow_TextVisibilityChanged;
-                trayWindow.AutoStartChanged += trayWindow_AutoStartChanged;
+        private void SetupTrayMenu() {
+            bool autoStartActive = System.IO.File.Exists(GetShortcutPath());
+            bool textVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible;
+            trayWindow.Setup(autoStartActive, CurrentTime.FontSize, textFontColor, textVisible);
+        }
+        
 
-                trayWindow.ShowDialog();
-
-                if (trayWindow.IsExit) {
-                    notifyIcon.MouseClick -= ShowTrayMenu;
-                    notifyIcon.Visible = false;
-                    notifyIcon.Dispose();
-                    notifyIcon = null;
-                    System.Windows.Application.Current.Shutdown();
-                } else if (trayWindow.IsReset) {
-                    ResetWindowGeometry();
-                }
-
-                trayWindow = null;
-
-                SaveWindowGeometry();
-            }
+        private void trayWindow_TextReset(object sender, RoutedEventArgs e) {
+            ResetWindowGeometry();
+            SetupTrayMenu();
         }
 
         private void trayWindow_AutoStartChanged(object sender, bool autoStartActive) {
@@ -128,12 +137,14 @@ namespace BigClockGit {
 
         private void trayWindow_TextSizeChanged(object sender, double textSize) {
             CurrentTime.FontSize = textSize;
+            SaveWindowGeometry();
         }
 
         private void trayWindow_TextColorChanged(object sender, string colorName) {
             try {
                 CurrentTime.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorName));
                 textFontColor = colorName;
+                SaveWindowGeometry();
             } catch {
             }
         }
@@ -144,6 +155,7 @@ namespace BigClockGit {
             } else {
                 CurrentTime.Visibility = System.Windows.Visibility.Hidden;
             }
+            SaveWindowGeometry();
         }
 
         private void AddShortcutToStartupGroup() {
@@ -260,6 +272,10 @@ namespace BigClockGit {
 
             this.Left = currentScreen.WorkingArea.Width - this.Width - 150;
             this.Top = currentScreen.WorkingArea.Height - this.Height - 100;
+            CurrentTime.FontSize = 25;
+            CurrentTime.Foreground = new SolidColorBrush(Colors.Black);
+            textFontColor = "Black";
+            CurrentTime.Visibility = System.Windows.Visibility.Visible;
         }
 
         private void SaveWindowGeometry() {

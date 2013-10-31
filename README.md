@@ -15,6 +15,6 @@ Instructions
 * Navigate to the "another folder" above and start the BigClockGit.exe
 * The big clock will initially be placed above the tray, move the clock to another location by dragging any part of any figure
 
-If you want to exit, reset clock placement or remove the autostart at login do this:
+If you want to exit, change appearance, reset to default settings or change the autostart at login do this:
 
-* Locate the startflag-icon in the tray and click the icon, then click the button associated with the desired action
+* Locate the startflag-icon in the tray and click the icon, update your settings. Click done to close the settings window or exit to terminate the program

@@ -85,17 +85,10 @@ namespace BigClockGit {
             notifyIcon.Icon = new System.Drawing.Icon(Path.Combine(exeDir, "Assets", "favicon.ico"));
             notifyIcon.Visible = true;
             notifyIcon.MouseClick += ShowTrayMenu;
+        }
 
-            trayWindow = new TrayWindow();
-            trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 350;
-            trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
-
-            trayWindow.DoneOrExit += trayWindow_DoneOrExit;
-            trayWindow.TextReset += trayWindow_TextReset;
-            trayWindow.TextSizeChanged += trayWindow_TextSizeChanged;
-            trayWindow.TextColorChanged += trayWindow_TextColorChanged;
-            trayWindow.TextVisibilityChanged += trayWindow_TextVisibilityChanged;
-            trayWindow.AutoStartChanged += trayWindow_AutoStartChanged;
+        private void trayWindow_Closed(object sender, EventArgs e) {
+            trayWindow = null;
         }
 
         private void trayWindow_DoneOrExit(object sender, bool isExit) {
@@ -111,6 +104,21 @@ namespace BigClockGit {
         }
 
         private void ShowTrayMenu(object sender, EventArgs args) {
+
+            if (trayWindow == null) {
+                trayWindow = new TrayWindow();
+                trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 350;
+                trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
+
+                trayWindow.DoneOrExit += trayWindow_DoneOrExit;
+                trayWindow.Closed += trayWindow_Closed;
+                trayWindow.TextReset += trayWindow_TextReset;
+                trayWindow.TextSizeChanged += trayWindow_TextSizeChanged;
+                trayWindow.TextColorChanged += trayWindow_TextColorChanged;
+                trayWindow.TextVisibilityChanged += trayWindow_TextVisibilityChanged;
+                trayWindow.AutoStartChanged += trayWindow_AutoStartChanged;
+            }
+
             trayWindow.Show();
             SetupTrayMenu();
         }

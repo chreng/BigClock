@@ -3,7 +3,9 @@ BigClockGit
 
 Remember the Win 7 desktop widgets? The clock? Use this very rudimentary Win 8 desktop program to show a digital clock on your desktop.
 
-For now VS2012 C# .Net 4 WPF code only.
+A click once version has been published on: http://www.rekoab.se/BigClockGit/
+
+Developed using VS2012 C#, .Net 4 and WPF.
 
 Instructions
 ------------

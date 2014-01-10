@@ -4,7 +4,7 @@
         WindowStyle="ToolWindow"
         ResizeMode="NoResize" SizeToContent="WidthAndHeight"
         Icon="Assets/favicon.ico"
-        Title="BigClockGit" Height="302.642" Width="180" ShowInTaskbar="False" Topmost="True">
+        Title="BigClockGit" Height="302.642" Width="180" ShowInTaskbar="False" Topmost="True" WindowStartupLocation="CenterScreen">
     <Grid Margin="22,22,22,22">
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />

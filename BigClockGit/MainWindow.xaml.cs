@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Windows.Media;
 using IWshRuntimeLibrary;
+using Microsoft.Win32;
 
 namespace BigClockGit {
 
@@ -36,6 +37,8 @@ namespace BigClockGit {
             // Note: Start tracking location after initializing geometry
             this.LocationChanged += MainWindow_LocationChanged;
 
+            SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+
             ShowInTray();
 
             ShowTime();
@@ -63,6 +66,10 @@ namespace BigClockGit {
             if (currentNumScreens == Screen.AllScreens.Length) {
                 SaveWindowGeometry();
             }
+        }
+
+        private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e) {
+            InitWindowGeometry();
         }
 
         private void SetupDefaultIfFirstLaunch() {
@@ -98,7 +105,7 @@ namespace BigClockGit {
                 notifyIcon.Dispose();
                 notifyIcon = null;
                 System.Windows.Application.Current.Shutdown();
-            } else {
+            } else if (trayWindow != null) {
                 trayWindow.Hide();
             }
         }
@@ -107,8 +114,6 @@ namespace BigClockGit {
 
             if (trayWindow == null) {
                 trayWindow = new TrayWindow();
-                trayWindow.Top = Screen.PrimaryScreen.WorkingArea.Height - trayWindow.Height - 350;
-                trayWindow.Left = Screen.PrimaryScreen.WorkingArea.Width - trayWindow.Width - 250;
 
                 trayWindow.DoneOrExit += trayWindow_DoneOrExit;
                 trayWindow.Closed += trayWindow_Closed;
@@ -279,8 +284,8 @@ namespace BigClockGit {
                 currentScreen = Screen.PrimaryScreen;
             }
 
-            this.Left = currentScreen.WorkingArea.Width - this.Width - 150;
-            this.Top = currentScreen.WorkingArea.Height - this.Height - 100;
+            this.Left = currentScreen.WorkingArea.Left + 10;
+            this.Top = currentScreen.WorkingArea.Bottom - this.Height - 250;
             CurrentTime.FontSize = 25;
             CurrentTime.Foreground = new SolidColorBrush(Colors.Black);
             textFontColor = "Black";

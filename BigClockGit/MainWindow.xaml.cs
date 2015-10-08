@@ -120,11 +120,16 @@ namespace BigClockGit {
                 trayWindow.TextVisibilityChanged += trayWindow_TextVisibilityChanged;
                 trayWindow.AutoStartChanged += trayWindow_AutoStartChanged;
                 trayWindow.AnchorChanged += trayWindow_AnchorChanged;
+                trayWindow.Closing += TrayWindow_Closing;
             }
 
             this.Activate();
             trayWindow.Show();
             SetupTrayMenu();
+        }
+
+        private void TrayWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+            SaveWindowGeometry();
         }
 
         private void SetupTrayMenu() {

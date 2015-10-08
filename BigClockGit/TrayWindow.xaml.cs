@@ -26,6 +26,8 @@ namespace BigClockGit {
         public event AutoStartChangedHandler AutoStartChanged;
         public delegate void AnchorChangedHandler(Object sender, BigClockAnchorStyles anchorStyle);
         public event AnchorChangedHandler AnchorChanged;
+        public delegate void WindowClosingHandler(Object sender);
+        public event WindowClosingHandler WindowClosing;
 
         private bool isSetup { get; set; }
 
@@ -172,7 +174,7 @@ namespace BigClockGit {
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e) {
-            DoneOrExit(sender, false);
+            Close();
         }
 
         private void Reset_Click(object sender, RoutedEventArgs e) {
@@ -184,7 +186,7 @@ namespace BigClockGit {
         }
 
         private void Done_Click(object sender, RoutedEventArgs e) {
-            DoneOrExit(sender, false);
+            Close();
         }
     }
 }

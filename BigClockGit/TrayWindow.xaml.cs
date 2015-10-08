@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using BigClockGit.Code;
 
 namespace BigClockGit {
     /// <summary>
@@ -23,7 +24,9 @@ namespace BigClockGit {
         public event TextVisibilityChangedHandler TextVisibilityChanged;
         public delegate void AutoStartChangedHandler(Object sender, bool autoStartActive);
         public event AutoStartChangedHandler AutoStartChanged;
-        
+        public delegate void AnchorChangedHandler(Object sender, BigClockAnchorStyles anchorStyle);
+        public event AnchorChangedHandler AnchorChanged;
+
         private bool isSetup { get; set; }
 
         private DispatcherTimer closeWindowTimer;
@@ -37,9 +40,14 @@ namespace BigClockGit {
             TextVisibility.Unchecked += TextVisibility_Checked;
             AutoStartActive.Checked += Autostart_Checked;
             AutoStartActive.Unchecked += Autostart_Checked;
+            AnchorTopLeft.Checked += Anchors_Checked;
+            AnchorTopRight.Checked += Anchors_Checked;
+            AnchorBottomLeft.Checked += Anchors_Checked;
+            AnchorBottomRight.Checked += Anchors_Checked;
         }
 
-        public void Setup(bool autoStartActive, double textFontSize, string textColorName, bool textVisible) {
+        internal void Setup(bool autoStartActive, double textFontSize, string textColorName, bool textVisible,
+            BigClockAnchorStyles anchorStyle) {
 
             isSetup = true;
 
@@ -47,6 +55,7 @@ namespace BigClockGit {
             SetupColors(textColorName);
             SetupFontSize(textFontSize);
             SetupVisibility(textVisible);
+            SetupAnchor(anchorStyle);
 
             StartCloseWindowTimer();
 
@@ -113,6 +122,39 @@ namespace BigClockGit {
                StartCloseWindowTimer();
            }
        }
+        private void SetupAnchor(BigClockAnchorStyles anchorStyle) {
+            switch (anchorStyle) {
+                case BigClockAnchorStyles.TopLeft:
+                    AnchorTopLeft.IsChecked = true;
+                    break;
+                case BigClockAnchorStyles.TopRight:
+                    AnchorTopRight.IsChecked = true;
+                    break;
+                case BigClockAnchorStyles.BottomLeft:
+                    AnchorBottomLeft.IsChecked = true;
+                    break;
+                case BigClockAnchorStyles.BottomRight:
+                    AnchorBottomRight.IsChecked = true;
+                    break;
+            }
+        }
+
+        private void Anchors_Checked(object sender, RoutedEventArgs e) {
+            if (isSetup == false) {
+                BigClockAnchorStyles anchorStyle = BigClockAnchorStyles.TopLeft;
+                if (AnchorTopLeft.IsChecked == true) {
+                    anchorStyle = BigClockAnchorStyles.TopLeft;
+                } else if (AnchorTopRight.IsChecked == true) {
+                    anchorStyle = BigClockAnchorStyles.TopRight;
+                } else if (AnchorBottomLeft.IsChecked == true) {
+                    anchorStyle = BigClockAnchorStyles.BottomLeft;
+                } else if (AnchorBottomRight.IsChecked == true) {
+                    anchorStyle = BigClockAnchorStyles.BottomRight;
+                }
+                AnchorChanged(this, anchorStyle);
+                StartCloseWindowTimer();
+            }
+        }
 
         private void StartCloseWindowTimer() {
             StopCloseWindowTimer();

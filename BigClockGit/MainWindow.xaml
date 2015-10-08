@@ -9,7 +9,7 @@
 
         <SolidColorBrush x:Key="mouseOverColor" Color="Black" />
 
-        <Style TargetType="Label" x:Name="CurrentTime">
+        <Style TargetType="Label" x:Name="lblCurrentTime">
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Cursor" Value="Cross" />

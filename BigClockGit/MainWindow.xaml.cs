@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Media;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
+using BigClockGit.Code;
 
 namespace BigClockGit {
 
@@ -17,6 +18,7 @@ namespace BigClockGit {
         private int currentNumScreens;
         private string textFontColor;
         private bool textVisible;
+        private BigClockAnchorStyles anchorStyle = BigClockAnchorStyles.TopLeft;
         private NotifyIcon notifyIcon;
         private TrayWindow trayWindow;
         private WshShellClass wshShell;
@@ -25,6 +27,7 @@ namespace BigClockGit {
             InitializeComponent();
 
             this.Loaded += MainWindow_Loaded;
+            this.Closed += MainWindow_Closed;
 
         }
 
@@ -34,15 +37,16 @@ namespace BigClockGit {
 
             InitWindowGeometry();
 
-            // Note: Start tracking location after initializing geometry
-            this.LocationChanged += MainWindow_LocationChanged;
-
             SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
 
             ShowInTray();
 
             ShowTime();
             UpdateTimerStart();
+        }
+
+        private void MainWindow_Closed(object sender, EventArgs e) {
+            SaveWindowGeometry();
         }
 
         public void Dispose() {
@@ -58,14 +62,7 @@ namespace BigClockGit {
             }
         }
 
-        private void RemoveNotifyIcon() {
-        }
-
-        private void MainWindow_LocationChanged(object sender, EventArgs e) {
-            // Location changes when number of screens changes, only save geometry when user moved the window
-            if (currentNumScreens == Screen.AllScreens.Length) {
-                SaveWindowGeometry();
-            }
+        public void RemoveNotifyIcon() {
         }
 
         private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e) {
@@ -122,6 +119,7 @@ namespace BigClockGit {
                 trayWindow.TextColorChanged += trayWindow_TextColorChanged;
                 trayWindow.TextVisibilityChanged += trayWindow_TextVisibilityChanged;
                 trayWindow.AutoStartChanged += trayWindow_AutoStartChanged;
+                trayWindow.AnchorChanged += trayWindow_AnchorChanged;
             }
 
             this.Activate();
@@ -131,8 +129,8 @@ namespace BigClockGit {
 
         private void SetupTrayMenu() {
             bool autoStartActive = System.IO.File.Exists(GetShortcutPath());
-            bool textVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible;
-            trayWindow.Setup(autoStartActive, CurrentTime.FontSize, textFontColor, textVisible);
+            bool isTextVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible;
+            trayWindow.Setup(autoStartActive, CurrentTime.FontSize, textFontColor, isTextVisible, anchorStyle);
         }
         
 
@@ -147,6 +145,10 @@ namespace BigClockGit {
             } else {
                 RemoveShortcutFromStartupGroup();
             }
+        }
+        private void trayWindow_AnchorChanged(object sender, BigClockAnchorStyles anchorStyle) {
+            this.anchorStyle = anchorStyle;
+            SaveWindowGeometry();
         }
 
         private void trayWindow_TextSizeChanged(object sender, double textSize) {
@@ -174,14 +176,14 @@ namespace BigClockGit {
 
         private void AddShortcutToStartupGroup() {
             wshShell = new WshShellClass();
-            IWshRuntimeLibrary.IWshShortcut MyShortcut;
+            IWshShortcut myShortcut;
             string tempLinkFile = Path.GetTempFileName() + ".lnk";
-            MyShortcut = (IWshRuntimeLibrary.IWshShortcut)wshShell.CreateShortcut(tempLinkFile);
-            MyShortcut.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            MyShortcut.Description = "Launches BigClockGit";
+            myShortcut = (IWshShortcut)wshShell.CreateShortcut(tempLinkFile);
+            myShortcut.TargetPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            myShortcut.Description = "Launches BigClockGit";
             string exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            MyShortcut.IconLocation = Path.Combine(exeDir, "Assets", "favicon.ico");
-            MyShortcut.Save();
+            myShortcut.IconLocation = Path.Combine(exeDir, "Assets", "favicon.ico");
+            myShortcut.Save();
 
             System.IO.File.Copy(tempLinkFile, GetShortcutPath(), true);
             System.IO.File.Delete(tempLinkFile);
@@ -203,15 +205,12 @@ namespace BigClockGit {
         }
 
         private void ResetWindowGeometry() {
-            this.LocationChanged -= MainWindow_LocationChanged;
 
             currentNumScreens = Screen.AllScreens.Length;
             Properties.Settings.Default["ScreenGeometry" + currentNumScreens.ToString()] = "";
             Properties.Settings.Default.Save();
 
             InitWindowGeometry();
-
-            this.LocationChanged += MainWindow_LocationChanged;
         }
 
         private void InitWindowGeometry() {
@@ -227,8 +226,8 @@ namespace BigClockGit {
             if (string.IsNullOrEmpty(savedGeometry) == false) {
                 string[] leftTopArray = savedGeometry.Split(';');
                 if (leftTopArray.Length >= 2) {
-                    double left;
-                    double top;
+                    double horizontal;
+                    double vertical;
                     int screen = currentNumScreens - 1;
                     if (leftTopArray.Length > 2) {
                         int.TryParse(leftTopArray[2], out screen);
@@ -249,15 +248,48 @@ namespace BigClockGit {
                         bool.TryParse(leftTopArray[5], out textVisible);
                     }
 
-                    if (double.TryParse(leftTopArray[0], out left) &&
-                        double.TryParse(leftTopArray[1], out top)) {
+                    anchorStyle = BigClockAnchorStyles.TopLeft;
+                    if (leftTopArray.Length > 6) {
+                        Enum.TryParse(leftTopArray[6], false, out anchorStyle);
+                    }
+
+                    if (double.TryParse(leftTopArray[0], out horizontal) &&
+                        double.TryParse(leftTopArray[1], out vertical)) {
 
                         currentScreen = Screen.AllScreens[screen];
-                        this.Left = left;
-                        this.Top = top;
+
+                        double left = horizontal;
+                        double top = vertical;
+                        switch (anchorStyle) {
+                            case BigClockAnchorStyles.TopLeft:
+                                left = horizontal;
+                                top = vertical;
+                                break;
+                            case BigClockAnchorStyles.TopRight:
+                                left = currentScreen.WorkingArea.Right - horizontal;
+                                top = vertical;
+                                break;
+                            case BigClockAnchorStyles.BottomLeft:
+                                left = horizontal;
+                                top = currentScreen.WorkingArea.Bottom- vertical;
+                                break;
+                            case BigClockAnchorStyles.BottomRight:
+                                left = currentScreen.WorkingArea.Right - horizontal;
+                                top = currentScreen.WorkingArea.Bottom - vertical;
+                                break;
+                        }
+
+                        // todo: Guard against bad values
+                        if (left > 0 &&
+                            left < (currentScreen.WorkingArea.Right - 10) &&
+                            top > 0 &&
+                            top < (currentScreen.WorkingArea.Bottom - 10)) {
+                            this.Left = left;
+                            this.Top = top;
+                        }
 
                         if (textFontSize >= 10 &&
-                            textFontSize <= 400) {
+                            textFontSize <= 200) {
                             CurrentTime.FontSize = textFontSize;
                         }
 
@@ -303,12 +335,36 @@ namespace BigClockGit {
                     this.Top >= screen.WorkingArea.Top &&
                     this.Top <= screen.WorkingArea.Bottom) {
 
-                    bool textVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible ? true : false;
-                    string savedGeometry = this.Left.ToString() + ";" + this.Top.ToString() + ";" + i.ToString() +
-                        ";" + CurrentTime.FontSize.ToString() + ";" + textFontColor +
-                        ";" + textVisible.ToString();
+                    double vertical = 0;
+                    double horizontal = 0;
 
-                    Properties.Settings.Default["ScreenGeometry" + numScreens.ToString()] = savedGeometry;
+                    switch (anchorStyle) {
+                        case BigClockAnchorStyles.TopLeft:
+                            horizontal = this.Left;
+                            vertical = this.Top;
+                            break;
+                        case BigClockAnchorStyles.TopRight:
+                            horizontal = currentScreen.WorkingArea.Right - this.Left; 
+                            vertical = this.Top;
+                            break;
+                        case BigClockAnchorStyles.BottomLeft:
+                            horizontal = this.Left;
+                            vertical = currentScreen.WorkingArea.Bottom - this.Top;
+                            break;
+                        case BigClockAnchorStyles.BottomRight:
+                            horizontal = currentScreen.WorkingArea.Right - this.Left;
+                            vertical = currentScreen.WorkingArea.Bottom - this.Top;
+                            break;
+                    }
+
+
+                    bool textVisible = CurrentTime.Visibility == System.Windows.Visibility.Visible ? true : false;
+                    string savedGeometry = horizontal + ";" + vertical + ";" + i.ToString() +
+                        ";" + CurrentTime.FontSize + ";" + textFontColor +
+                        ";" + textVisible +
+                        ";" + anchorStyle;
+
+                    Properties.Settings.Default["ScreenGeometry" + numScreens] = savedGeometry;
                     Properties.Settings.Default.Save();
 
                     return;
@@ -356,7 +412,7 @@ namespace BigClockGit {
             string dateTimeString = now.ToShortDateString() + " " + now.ToShortTimeString();
             dateTimeString = dateTimeString.Replace(dayname, "");
 
-            if (string.Compare(CurrentTime.Content as string, dateTimeString) != 0) {
+            if (string.CompareOrdinal(CurrentTime.Content as string, dateTimeString) != 0) {
                 CurrentTime.Content = dateTimeString;
             }
         }

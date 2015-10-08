@@ -4,7 +4,7 @@
         WindowStyle="ToolWindow"
         ResizeMode="NoResize" SizeToContent="WidthAndHeight"
         Icon="Assets/favicon.ico"
-        Title="BigClockGit" Height="302.642" Width="180" ShowInTaskbar="False" Topmost="True" WindowStartupLocation="CenterScreen">
+        Title="BigClockGit" Height="370" Width="180" ShowInTaskbar="False" Topmost="True" WindowStartupLocation="CenterScreen">
     <Grid Margin="22,22,22,22">
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
@@ -13,26 +13,48 @@
             <RowDefinition Height="30" />
             <RowDefinition Height="30" />
             <RowDefinition Height="30" />
+            <RowDefinition Height="88" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
         
-        <Button Name="Reset" Content="Reset" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120" Click="Reset_Click"/>
+        <Button Name="Reset" Content="Reset" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" Click="Reset_Click"/>
 
         <CheckBox Name="AutoStartActive" Content="Start at login" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top"/>        
         
         <TextBlock HorizontalAlignment="Left" Grid.Row="2" TextWrapping="Wrap" Text="Font size" VerticalAlignment="Top"/>
         <TextBlock Name="LabelTextFontSize" HorizontalAlignment="Left" Grid.Row="2" Margin="60,0,0,0" TextWrapping="Wrap" Text="..." VerticalAlignment="Top"/>
         
-        <Slider Name="SliderTextFontSize" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Top" Width="120" Maximum="200" Minimum="10" SmallChange="1"/>
+        <Slider Name="SliderTextFontSize" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Top" Width="135" Maximum="200" Minimum="10" SmallChange="1"/>
 
-        <TextBlock HorizontalAlignment="Left" Grid.Row="4" Text="Color" VerticalAlignment="Top"/>
-        <ComboBox Name="TextColor" HorizontalAlignment="Left" Grid.Row="4" Margin="40,0,0,0" VerticalAlignment="Top" Width="80"/>
+        <TextBlock HorizontalAlignment="Left" Grid.Row="4" Text="Color" VerticalAlignment="Center"/>
+        <ComboBox Name="TextColor" HorizontalAlignment="Left" Grid.Row="4" Margin="40,0,0,0" VerticalAlignment="Center" Width="90"/>
         
         <CheckBox Name="TextVisibility" Content="Time visible" ToolTip="Time visibility for this setup" HorizontalAlignment="Left"
-                  Grid.Row="5" VerticalAlignment="Top"/>
+                  Grid.Row="5" VerticalAlignment="Center"/>
+
+        <Border Grid.Row="6" BorderBrush="Gray" BorderThickness="1" Padding="5" Margin="0,5,15,10" CornerRadius="2">
+            <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="14" />
+                <RowDefinition Height="18" />
+                <RowDefinition Height="14" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="20" />
+            </Grid.ColumnDefinitions>
+
+            <RadioButton GroupName="Anchors" Name="AnchorTopLeft" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"></RadioButton>
+            <RadioButton GroupName="Anchors"  Name="AnchorTopRight" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center"></RadioButton>
+            <RadioButton GroupName="Anchors"  Name="AnchorBottomLeft" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"></RadioButton>
+            <RadioButton GroupName="Anchors"  Name="AnchorBottomRight" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center"></RadioButton>
+            <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">Anchor</TextBlock>
+        </Grid>
+        </Border>
         
-        <Button Name="Done" Content="Done" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Top" Width="50" Click="Done_Click"/>
-        <Button Name="Exit" Content="Exit" HorizontalAlignment="Left" Grid.Row="6" Margin="70,0,0,0" VerticalAlignment="Top" Width="50" Click="Exit_Click"/>
+        <Button Name="Done" Content="Done" HorizontalAlignment="Left" Grid.Row="7" VerticalAlignment="Top" Width="50" Click="Done_Click"/>
+        <Button Name="Exit" Content="Exit" HorizontalAlignment="Left" Grid.Row="7" Margin="80,0,0,0" VerticalAlignment="Top" Width="50" Click="Exit_Click"/>
 
     </Grid>
 </Window>

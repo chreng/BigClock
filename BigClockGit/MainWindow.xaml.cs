@@ -11,6 +11,8 @@ using BigClockGit.Code;
 
 namespace BigClockGit {
 
+    // Testar commit från VsCode i Linux
+
     public partial class MainWindow : Window, IDisposable {
 
         private DispatcherTimer updateTimer;
